@@ -1,7 +1,7 @@
 package com.clemble.util.validator
 
 import org.specs2.mutable.Specification
-import play.api.libs.json.Json
+import play.api.libs.json.{Format, Json}
 
 /**
  * Check simple case class with basic fields, string, integer & boolean.
@@ -17,9 +17,9 @@ class PlainCaseClassPatchValidatorSpec extends Specification {
 
   object PlainCaseClass {
 
-    implicit val format = Json.format[PlainCaseClass]
+    implicit val format: Format[PlainCaseClass] = Json.format[PlainCaseClass]
 
-    implicit val validator = PatchValidator.validator[PlainCaseClass]
+    implicit val validator: PatchValidator[PlainCaseClass] = PatchValidator[PlainCaseClass].validator
 
   }
 

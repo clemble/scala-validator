@@ -1,7 +1,7 @@
 package com.clemble.util.validator
 
 import org.specs2.mutable.Specification
-import play.api.libs.json.Json
+import play.api.libs.json.{Format, Json}
 import com.clemble.util.validator.PatchValidator._
 
 /**
@@ -17,9 +17,11 @@ class ArrayCaseClassValidatorSpec extends Specification {
 
   object ArrayCaseClass {
 
-    implicit val format = Json.format[ArrayCaseClass]
+    implicit val format: Format[ArrayCaseClass] = Json.format[ArrayCaseClass]
 
-    implicit val validator = PatchValidator.validator[ArrayCaseClass]
+    import PatchValidator._
+    import shapeless._
+    implicit val validator: PatchValidator[ArrayCaseClass] = PatchValidator[ArrayCaseClass].validator
 
   }
 
