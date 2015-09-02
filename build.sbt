@@ -8,6 +8,8 @@ scalaVersion := "2.11.7"
 
 offline := true
 
+resolvers += "scalaz-bintray" at "http://dl.bintray.com/scalaz/releases"
+
 libraryDependencies ++= Seq(
   "com.typesafe.play" %% "play-json" % "2.4.2" % "provided",
   "com.chuusai" %% "shapeless" % "2.2.5",
