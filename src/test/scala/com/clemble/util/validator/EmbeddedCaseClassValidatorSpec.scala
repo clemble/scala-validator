@@ -1,7 +1,7 @@
 package com.clemble.util.validator
 
 import org.specs2.mutable.Specification
-import play.api.libs.json.Json
+import play.api.libs.json.{Format, Json}
 
 /**
  * Created by mavarazy on 9/2/15.
@@ -20,13 +20,13 @@ class EmbeddedCaseClassValidatorSpec extends Specification {
 
   object Contact {
 
-    implicit val phoneFormat = Json.format[Phone]
+    implicit val phoneFormat: Format[Phone] = Json.format[Phone]
 
-    implicit val contactFormat = Json.format[Contact]
+    implicit val contactFormat: Format[Contact] = Json.format[Contact]
 
-    implicit val phoneValidator = PatchValidator.validator[Phone]
+    implicit val phoneValidator: PatchValidator[Phone] = PatchValidator[Phone].validator
 
-    implicit val validator = PatchValidator.validator[Contact]
+    implicit val validator: PatchValidator[Contact] = PatchValidator[Contact].validator
 
   }
 
