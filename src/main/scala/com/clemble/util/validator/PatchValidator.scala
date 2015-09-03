@@ -27,7 +27,7 @@ object PatchValidator extends PatchValidatorLowImplicits {
       def isValid(json: JsValue): Boolean =
         json match {
           case JsObject(fields) => fields.isEmpty
-          case _ => true
+          case _ => false
         }
     }
 
