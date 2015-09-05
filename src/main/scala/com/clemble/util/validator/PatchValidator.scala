@@ -22,32 +22,40 @@ trait PatchValidator[T] {
 
 object PatchValidator extends PatchValidatorLowImplicits {
 
+  /**
+   * In case of empty HNil, ensure Json is empty as well, to prevent adding
+   * trash to JSON.
+   *
+   * @return tail PatchValidator
+   */
   implicit def deriveHNil: PatchValidator[HNil] =
     new PatchValidator[HNil] {
-      def isValid(json: JsValue): Boolean =
+      def isValid(json: JsValue): Boolean = {
         json match {
           case JsObject(fields) => fields.isEmpty
           case _ => true
         }
+      }
     }
 
   /**
    * Derive a case class field using a `PatchValidator`
    */
   implicit def deriveHCons[K <: Symbol, V, T <: HList]
-  (implicit
-   key: Witness.Aux[K],
-   sv: Lazy[PatchValidator[V]],
-   st: Lazy[PatchValidator[T]]
-  ): PatchValidator[FieldType[K, V] :: T] =
+    (implicit
+      key: Witness.Aux[K],
+      sv: Lazy[PatchValidator[V]],
+      st: Lazy[PatchValidator[T]]
+    ): PatchValidator[FieldType[K, V] :: T] =
     new PatchValidator[FieldType[K, V] :: T] {
-      def isValid(json: JsValue): Boolean =
+      def isValid(json: JsValue): Boolean = {
         json match {
           case obj: JsObject =>
             val field = key.value.name
             (__ \ field).readNullable[JsValue].filter(_.forall(sv.value.isValid)).reads(obj).isSuccess && st.value.isValid(obj - field)
           case _ => true
         }
+      }
     }
 
   class PatchValidatorGen[T] {
@@ -65,16 +73,14 @@ object PatchValidator extends PatchValidatorLowImplicits {
    */
   def apply[T] = new PatchValidatorGen[T]
 
-  // TODO Implement the two following methods to support sealed hierachies
-  implicit def deriveCNil: PatchValidator[CNil] = ???
-
-  implicit def deriveCCons[K <: Symbol, V, T <: Coproduct]
-  (implicit
-   key: Witness.Aux[K],
-   sv: Lazy[PatchValidator[V]],
-   st: Lazy[PatchValidator[T]]
-  ): PatchValidator[FieldType[K, V] :+: T] = ???
-
+  /**
+   * Check JSON is valid partial presentation of type `T`
+   *
+   * @param json partial json presentation
+   * @param validator validator to use
+   * @tparam T type
+   * @return
+   */
   def isValid[T](json: JsValue)(implicit validator: PatchValidator[T]) = {
     validator.isValid(json)
   }
@@ -88,21 +94,20 @@ trait PatchValidatorLowImplicits {
    * Derive a case class field using a `Reads`
    */
   implicit def deriveHConsReads[K <: Symbol, V, T <: HList]
-  (implicit
-   key: Witness.Aux[K],
-   rv: Lazy[Reads[V]],
-   st: Lazy[PatchValidator[T]]
-  ): PatchValidator[FieldType[K, V] :: T] =
+    (implicit
+      key: Witness.Aux[K],
+      rv: Lazy[Reads[V]],
+      st: Lazy[PatchValidator[T]]
+    ): PatchValidator[FieldType[K, V] :: T] =
     new PatchValidator[FieldType[K, V] :: T] {
-      def isValid(json: JsValue): Boolean =
+      def isValid(json: JsValue): Boolean = {
         json match {
           case obj: JsObject =>
             val field = key.value.name
             (__ \ field).readNullable(rv.value).reads(obj).isSuccess && st.value.isValid(obj - field)
           case _ => false
         }
+      }
     }
-
-
 
 }
